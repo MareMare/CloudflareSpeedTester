@@ -17,7 +17,9 @@ namespace CloudflareSpeedTester.Services;
 /// <summary>
 /// スピードテストサービスを提供するクラスです。
 /// </summary>
+#pragma warning disable CA1812
 internal sealed class SpeedTestService : ISpeedTestService
+#pragma warning restore CA1812
 {
     /// <summary>ベースURLを表します。</summary>
     private const string _baseUrl = "https://speed.cloudflare.com";

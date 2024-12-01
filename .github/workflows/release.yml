@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name. eg) "v0.1.0"'
+        required: true
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+env:
+  DOTNET_VERSION: 8.0.x
+  TAG_NAME: ${{ inputs.tag || github.ref_name }}
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: 💡 gh --version
+        run: gh --version
+      - name: 🧪 gh auth status
+        run: gh auth status
+      - name: 🛒 Checkout
+        uses: actions/checkout@v4.2.2
+      - name: ✨ Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+      - name: 🛠️ Build
+        run: dotnet build --configuration Release
+
+      - name: 🚀 Publish
+        run: |
+          $timestamp = "${{ env.TAG_NAME }}"
+
+          dotnet publish --configuration Release -p:PublishProfile=FolderProfile --output ".\artifacts\CloudflareSpeedTester" ".\src\CloudflareSpeedTester\CloudflareSpeedTester.csproj"
+          $zipFileName1 = ".\CloudflareSpeedTester-win-x64_" + $timestamp + ".zip"
+          Compress-Archive -DestinationPath $zipFileName1 -Path ".\artifacts\CloudflareSpeedTester"
+          Remove-Item -Recurse -Force artifacts
+
+      - name: 📝 Create Draft Release
+        run: gh release create ${{ env.TAG_NAME }} --title "Release ${{ env.TAG_NAME }}" --generate-notes --draft --prerelease
+
+      - name: ➕ Upload Assets
+        run: gh release upload ${{ env.TAG_NAME }} $(ls ".\*_${{ env.TAG_NAME }}.zip")
+
+      - name: 📣 Summary
+        run: echo "### ✅ Release succeeded! ${{ env.TAG_NAME }} 🌟" >> $GITHUB_STEP_SUMMARY
+        shell: bash

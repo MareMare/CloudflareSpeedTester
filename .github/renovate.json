@@ -1,0 +1,52 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":timezone(Asia/Tokyo)"
+  ],
+  "ignorePaths": [
+    "**/examples/**",
+    "dev/**"
+  ],
+  "assigneesFromCodeOwners": true,
+  "configMigration": true,
+  "labels": [
+    "Type: dependencies"
+  ],
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 5,
+  "branchConcurrentLimit": 5,
+  "reviewersFromCodeOwners": true,
+  "schedule": [
+    "after 10pm every weekend",
+    "before 4am every weekend"
+  ],
+  "automergeSchedule": [
+    "after 10pm and before 5am every weekend"
+  ],
+  "platformAutomerge": true,
+  "packageRules": [
+    {
+      "description": "Automerge non-major updates",
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ],
+      "automerge": false
+    },
+    {
+      "groupName": "Microsoft.EntityFrameworkCore",
+      "matchPackageNames": [
+        "Microsoft.EntityFrameworkCore{/,}**"
+      ]
+    },
+    {
+      "groupName": "microsoft-identity-web",
+      "matchSourceUrls": [
+        "https://github.com/AzureAD/microsoft-identity-web{/,}**"
+      ]
+    }
+  ]
+}

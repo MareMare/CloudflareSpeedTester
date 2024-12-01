@@ -1,0 +1,39 @@
+name: CI
+on:
+  workflow_dispatch:
+  push: # run on pushes to main (only happens when PRs are merged or admin commits directly to main)
+    branches:
+      - main
+    paths:
+      - ".github/workflows/ci.yml"
+      - "src/**"
+  pull_request: # run on all PR actions (push, open, reopen)
+    paths:
+      - ".github/workflows/ci.yml"
+      - "src/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: 8.0.x
+
+jobs:
+  ci:
+    name: 🧪 CI
+    runs-on: windows-latest
+    steps:
+      - name: 🛒 Checkout
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+          filter: tree:0
+          ref: ${{ github.head_ref }}
+      - name: ✨ Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: 🛠️ Build
+        run: dotnet build "CloudflareSpeedTester.sln" --configuration Release

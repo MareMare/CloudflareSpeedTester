@@ -1,0 +1,95 @@
+<!-- 🚀 src projects properties -->
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <PropertyGroup Label="Common properties in the src folder projects">
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Deterministic>true</Deterministic>
+    <!-- Code analysis -->
+    <AnalysisLevel>latest-all</AnalysisLevel>
+    <AnalysisMode>All</AnalysisMode>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- XML Documentation file -->
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <!-- Assembly info -->
+    <ApplicationIcon>$(MSBuildThisFileDirectory)../logo.ico</ApplicationIcon>
+    <Authors>MareMare</Authors>
+    <Company>MareMare</Company>
+    <Copyright>Copyright © $([System.DateTime]::Now.ToString(yyyy)) MareMare.</Copyright>
+    <Description>Simple Speed Test CLI via Cloudflare.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Package">
+    <!-- NuGet info -->
+    <!-- <Version>0.0.1-alpha.999</Version> -->
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/MareMare/CloudflareSpeedTester</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/MareMare/CloudflareSpeedTester/releases</PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/MareMare/CloudflareSpeedTester.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <!--- SourceLink configuration -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(GITHUB_ACTIONS)' == 'true' ">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Versioning">
+    <!-- MinVer configuration -->
+    <!-- <MinVerDefaultPreReleaseIdentifiers>beta</MinVerDefaultPreReleaseIdentifiers> -->
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+    <MinVerVerbosity>normal</MinVerVerbosity>
+    <MinVerIgnoreHeight>true</MinVerIgnoreHeight>
+  </PropertyGroup>
+
+  <ItemGroup Label="Package References">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
+    <PackageReference Include="MinVer" Version="6.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup Label="StyleCop Analyzers">
+    <!--StyleCop.Analyzers package -->
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)../stylecop.json" Link="stylecop.json" />
+  </ItemGroup>
+
+  <ItemGroup Label="Threading Analyzers">
+    <!--Microsoft.VisualStudio.Threading.Analyzers package -->
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.11.20">
+      <PrivateAssets>all</PrivateAssets>
+      <!-- <PrivateAssets>none</PrivateAssets> -->
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Label="Additional files">
+    <!-- Include additional files for the NuGet package -->
+    <None Include="$(MSBuildThisFileDirectory)../LICENSE" Pack="true" PackagePath="" />
+    <!-- Include additional files -->
+    <Content Include="$(MSBuildThisFileDirectory)../logo.ico" Link="logo.ico" />
+    <Content Include="$(MSBuildThisFileDirectory)../logo.png" Link="logo.png" />
+  </ItemGroup>
+
+  <ItemGroup Label="InternalsVisibleTo">
+    <!-- <InternalsVisibleTo Include="Some.Tests" /> -->
+  </ItemGroup>
+
+  <!-- Customize Versions -->
+  <Target Name="CustomizeVersions" AfterTargets="MinVer">
+    <PropertyGroup>
+      <AssemblyVersion>$([MSBuild]::ValueOrDefault('$(MinVerMajor)', '0')).$([MSBuild]::ValueOrDefault('$(MinVerMinor)', '0')).$([MSBuild]::ValueOrDefault('$(MinVerPatch)', '0')).0</AssemblyVersion>
+      <FileVersion>$([MSBuild]::ValueOrDefault('$(MinVerMajor)', '0')).$([MSBuild]::ValueOrDefault('$(MinVerMinor)', '0')).$([MSBuild]::ValueOrDefault('$(MinVerPatch)', '0')).0</FileVersion>
+    </PropertyGroup>
+  </Target>
+
+</Project>

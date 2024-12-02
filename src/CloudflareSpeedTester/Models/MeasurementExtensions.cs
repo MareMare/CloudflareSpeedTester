@@ -18,8 +18,9 @@ internal static class MeasurementExtensions
     /// 測定結果のコレクションを<see cref="MeasurementResult"/>に変換します。
     /// </summary>
     /// <param name="allMeasurements">すべての測定結果のコレクション。</param>
+    /// <param name="startedAt">テストを開始した日時(UTC)。</param>
     /// <returns>変換された<see cref="MeasurementResult"/>。</returns>
-    public static MeasurementResult ToResult(this IEnumerable<Measurement> allMeasurements)
+    public static MeasurementResult ToResult(this IEnumerable<Measurement> allMeasurements, DateTimeOffset startedAt)
     {
         var measurements = allMeasurements.ToArray();
 
@@ -57,6 +58,7 @@ internal static class MeasurementExtensions
         var uploadedJitter = uploadedLatencies.ToJitter();
 
         var result = new MeasurementResult(
+            StartedAt: startedAt,
             DownloadedSpeed: downloadedSpeed90ThPercentile,
             UploadedSpeed: uploadedSpeed90ThPercentile,
             Latency: latency,
@@ -84,8 +86,8 @@ internal static class MeasurementExtensions
         measurements
             .Where(
                 measurement =>
-                    measurement.Spec.Category == category &&
-                    (!direction.HasValue || measurement.Spec.Direction == direction))
+                    measurement.Category == category &&
+                    (!direction.HasValue || measurement.Direction == direction))
             .Select(selector)
             .ToArray();
 }

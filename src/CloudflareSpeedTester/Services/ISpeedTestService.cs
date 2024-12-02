@@ -13,12 +13,17 @@ namespace CloudflareSpeedTester.Services;
 /// <summary>
 /// スピードテストサービスを提供するインターフェースです。
 /// </summary>
-public interface ISpeedTestService : IDisposable
+internal interface ISpeedTestService : IDisposable
 {
     /// <summary>
     /// 非同期操作として、スピードテストを実行します。
     /// </summary>
     /// <param name="settings">スピードテストの設定を表す<see cref="SpeedTestSettings"/>。</param>
+    /// <param name="testSpecs">テスト仕様のコレクション。</param>
+    /// <param name="startedAt">テストを開始した日時(UTC)。</param>
     /// <returns>テスト結果を表す<see cref="TestResult"/>を返すタスク。</returns>
-    Task<TestResult> RunAsync(SpeedTestSettings settings);
+    Task<TestResult> RunAsync(
+        SpeedTestSettings settings,
+        IReadOnlyCollection<TestSpec> testSpecs,
+        DateTimeOffset startedAt);
 }

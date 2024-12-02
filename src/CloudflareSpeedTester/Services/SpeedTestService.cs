@@ -7,7 +7,6 @@
 
 using System.Diagnostics;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using CloudflareSpeedTester.Models;
 using CloudflareSpeedTester.Settings;
@@ -33,24 +32,17 @@ internal sealed class SpeedTestService : ISpeedTestService
     /// <summary>HTTPクライアントを表します。</summary>
     private readonly HttpClient _client;
 
-    /// <summary>テスト仕様のコレクションを表します。</summary>
-    private readonly IReadOnlyCollection<TestSpec> _testSpecs;
-
     /// <summary>
     /// <see cref="SpeedTestService"/> クラスの新しいインスタンスを初期化します。
     /// </summary>
     /// <param name="httpClientFactory">HTTPクライアントファクトリ。</param>
     public SpeedTestService(IHttpClientFactory httpClientFactory)
     {
-        var processName = Process.GetCurrentProcess().MainModule?.ModuleName;
-        var appAssemblyName = Assembly.GetExecutingAssembly().GetName();
-        var userAgent = $"{Path.GetFileNameWithoutExtension(processName)}/{appAssemblyName.Version?.ToString(3)}";
+        var userAgent = $"{VersionInfo.ApplicationName}/{VersionInfo.Version}";
 
         this._client = httpClientFactory.CreateClient();
         this._client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", userAgent);
         this._client.Timeout = TimeSpan.FromSeconds(10);
-
-        this._testSpecs = SpeedTestService.CreateTestSpecs();
     }
 
     /// <inheritdoc />
@@ -58,38 +50,25 @@ internal sealed class SpeedTestService : ISpeedTestService
         this._client.Dispose();
 
     /// <inheritdoc />
-    public async Task<TestResult> RunAsync(SpeedTestSettings settings)
+    public async Task<TestResult> RunAsync(
+        SpeedTestSettings settings,
+        IReadOnlyCollection<TestSpec> testSpecs,
+        DateTimeOffset startedAt)
     {
         var metadata = await this.FetchMetadataAsync().ConfigureAwait(false);
 
         List<Measurement> measurements = [];
-        foreach (var spec in this._testSpecs)
+        foreach (var spec in testSpecs)
         {
             var partialMeasurements = await this.RunTestSpecAsync(spec).ConfigureAwait(false);
             measurements.AddRange(partialMeasurements);
         }
 
-        var result = measurements.ToResult();
+        var result = measurements.ToResult(startedAt);
         var pretty = new MeasurementPretty(result);
         var testResult = new TestResult(metadata, result, pretty);
         return testResult;
     }
-
-    /// <summary>
-    /// テスト仕様のコレクションを作成します。
-    /// </summary>
-    /// <returns>テスト仕様のコレクション。</returns>
-    private static IReadOnlyCollection<TestSpec> CreateTestSpecs() =>
-    [
-        new("latency", TestCategory.Latency, TestDirection.Download, 0, 20),
-        new("100 kB", TestCategory.Speed, TestDirection.Download, 100_000, 10),
-        new("1 MB", TestCategory.Speed, TestDirection.Download, 1_000_000, 8),
-        new("10 MB", TestCategory.Speed, TestDirection.Download, 10_000_000, 6),
-        new("25 MB", TestCategory.Speed, TestDirection.Download, 25_000_000, 4),
-        new("100 kB", TestCategory.Speed, TestDirection.Upload, 100_000, 8),
-        new("1 MB", TestCategory.Speed, TestDirection.Upload, 1_000_000, 6),
-        new("10 MB", TestCategory.Speed, TestDirection.Upload, 10_000_000, 4),
-    ];
 
     /// <summary>
     /// ネットワークメタデータを非同期で取得します。
@@ -120,6 +99,8 @@ internal sealed class SpeedTestService : ISpeedTestService
     /// <returns>測定結果のコレクション。</returns>
     private async Task<IReadOnlyCollection<Measurement>> RunTestSpecAsync(TestSpec spec)
     {
+        spec.StartProgress();
+
         List<Measurement> measurements = [];
         for (var index = 0; index < spec.Iterations; index++)
         {
@@ -128,6 +109,7 @@ internal sealed class SpeedTestService : ISpeedTestService
                 : await MeasureDownloadAsync(spec).ConfigureAwait(false);
 
             measurements.Add(measurement);
+            spec.IncrementProgress();
         }
 
         return measurements;
@@ -135,7 +117,7 @@ internal sealed class SpeedTestService : ISpeedTestService
         async Task<Measurement> MeasureUploadAsync(TestSpec testSpec)
         {
             var url = $"{SpeedTestService._baseUrl}/{SpeedTestService._uploadUrl}";
-            var payload = new byte[testSpec.Size];
+            var payload = new byte[testSpec.BytesSize];
             var sw = Stopwatch.StartNew();
             using var payloadBytesContent = new ByteArrayContent(payload);
             var response = await this._client.PostAsync(new Uri(url), payloadBytesContent).ConfigureAwait(false);
@@ -145,7 +127,7 @@ internal sealed class SpeedTestService : ISpeedTestService
 
         async Task<Measurement> MeasureDownloadAsync(TestSpec testSpec)
         {
-            var url = $"{SpeedTestService._baseUrl}/{SpeedTestService._downloadUrl}{testSpec.Size}";
+            var url = $"{SpeedTestService._baseUrl}/{SpeedTestService._downloadUrl}{testSpec.BytesSize}";
             var sw = Stopwatch.StartNew();
             var response = await this._client.GetAsync(new Uri(url)).ConfigureAwait(false);
             sw.Stop();
@@ -166,7 +148,9 @@ internal sealed class SpeedTestService : ISpeedTestService
 
             var bps = testSpec.Bits / duration.TotalSeconds;
             return new Measurement(
-                Spec: testSpec,
+                Category: testSpec.Category,
+                Direction: testSpec.Direction,
+                BytesSize: testSpec.BytesSize,
                 Duration: duration,
                 Latency: latency,
                 BitsPerSeconds: bps);

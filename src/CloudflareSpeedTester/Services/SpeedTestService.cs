@@ -29,8 +29,8 @@ internal sealed class SpeedTestService : ISpeedTestService
     /// <summary>アップロードURLのパスを表します。</summary>
     private const string _uploadUrl = "__up";
 
-    /// <summary>HTTPクライアントを表します。</summary>
-    private readonly HttpClient _client;
+    /// <summary>HTTPクライアントファクトリを表します。</summary>
+    private readonly IHttpClientFactory _httpClientFactory;
 
     /// <summary>
     /// <see cref="SpeedTestService"/> クラスの新しいインスタンスを初期化します。
@@ -38,16 +38,8 @@ internal sealed class SpeedTestService : ISpeedTestService
     /// <param name="httpClientFactory">HTTPクライアントファクトリ。</param>
     public SpeedTestService(IHttpClientFactory httpClientFactory)
     {
-        var userAgent = $"{VersionInfo.ApplicationName}/{VersionInfo.Version}";
-
-        this._client = httpClientFactory.CreateClient();
-        this._client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", userAgent);
-        this._client.Timeout = TimeSpan.FromSeconds(10);
+        this._httpClientFactory = httpClientFactory;
     }
-
-    /// <inheritdoc />
-    public void Dispose() =>
-        this._client.Dispose();
 
     /// <inheritdoc />
     public async Task<TestResult> RunAsync(
@@ -55,12 +47,18 @@ internal sealed class SpeedTestService : ISpeedTestService
         IReadOnlyCollection<TestSpec> testSpecs,
         DateTimeOffset startedAt)
     {
-        var metadata = await this.FetchMetadataAsync().ConfigureAwait(false);
+        using var client = this._httpClientFactory.CreateClient();
+        client.DefaultRequestHeaders.TryAddWithoutValidation(
+            "User-Agent",
+            $"{VersionInfo.ApplicationName}/{VersionInfo.Version}");
+        client.Timeout = TimeSpan.FromSeconds(settings.TimeoutSeconds);
+
+        var metadata = await SpeedTestService.FetchMetadataAsync(client).ConfigureAwait(false);
 
         List<Measurement> measurements = [];
         foreach (var spec in testSpecs)
         {
-            var partialMeasurements = await this.RunTestSpecAsync(spec).ConfigureAwait(false);
+            var partialMeasurements = await SpeedTestService.RunTestSpecAsync(client, spec).ConfigureAwait(false);
             measurements.AddRange(partialMeasurements);
         }
 
@@ -73,11 +71,12 @@ internal sealed class SpeedTestService : ISpeedTestService
     /// <summary>
     /// ネットワークメタデータを非同期で取得します。
     /// </summary>
+    /// <param name="client">HTTPクライアント。</param>
     /// <returns>ネットワークメタデータを表す<see cref="NetworkMetadata"/>。</returns>
-    private async Task<NetworkMetadata> FetchMetadataAsync()
+    private static async Task<NetworkMetadata> FetchMetadataAsync(HttpClient client)
     {
         var url = $"{SpeedTestService._baseUrl}/{SpeedTestService._downloadUrl}0";
-        var response = await this._client.GetAsync(new Uri(url)).ConfigureAwait(false);
+        var response = await client.GetAsync(new Uri(url)).ConfigureAwait(false);
         var headers = response.Headers;
         return new NetworkMetadata(
             City: ExtractHeaderValue(headers, "cf-meta-city", "City N/A"),
@@ -95,9 +94,10 @@ internal sealed class SpeedTestService : ISpeedTestService
     /// <summary>
     /// 非同期操作として、テスト仕様に基づいて測定を非同期で実行します。
     /// </summary>
+    /// <param name="client">HTTPクライアント。</param>
     /// <param name="spec">テスト仕様を表す<see cref="TestSpec"/>。</param>
     /// <returns>測定結果のコレクション。</returns>
-    private async Task<IReadOnlyCollection<Measurement>> RunTestSpecAsync(TestSpec spec)
+    private static async Task<IReadOnlyCollection<Measurement>> RunTestSpecAsync(HttpClient client, TestSpec spec)
     {
         spec.StartProgress();
 
@@ -120,7 +120,7 @@ internal sealed class SpeedTestService : ISpeedTestService
             var payload = new byte[testSpec.BytesSize];
             var sw = Stopwatch.StartNew();
             using var payloadBytesContent = new ByteArrayContent(payload);
-            var response = await this._client.PostAsync(new Uri(url), payloadBytesContent).ConfigureAwait(false);
+            var response = await client.PostAsync(new Uri(url), payloadBytesContent).ConfigureAwait(false);
             sw.Stop();
             return MeasureTimes(testSpec, sw.Elapsed, response);
         }
@@ -129,7 +129,7 @@ internal sealed class SpeedTestService : ISpeedTestService
         {
             var url = $"{SpeedTestService._baseUrl}/{SpeedTestService._downloadUrl}{testSpec.BytesSize}";
             var sw = Stopwatch.StartNew();
-            var response = await this._client.GetAsync(new Uri(url)).ConfigureAwait(false);
+            var response = await client.GetAsync(new Uri(url)).ConfigureAwait(false);
             sw.Stop();
             return MeasureTimes(testSpec, sw.Elapsed, response);
         }

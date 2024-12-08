@@ -26,6 +26,7 @@ Simple Speed Test CLI via **[speed.cloudflare.com](https://speed.cloudflare.com/
 | `--output-csv `      |         | Specifies the file path to output speed test results in CSV format                                |
 | `--output-json `     |         | Specifies the file path to output speed test results in JSON format                               |
 | `--force-new`        |         | Flag to overwrite existing files or create new ones for the specified CsvFilePath or JsonFilePath |
+| `--timeout SECONDS`  | 90      | Specifies the timeout duration for the HTTP client in seconds                                     |
 
 ## Examples
 

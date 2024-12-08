@@ -85,4 +85,16 @@ public sealed class SpeedTestSettings : CommandSettings
     [Description("Flag to overwrite existing files or create new ones for the specified CsvFilePath or JsonFilePath")]
     [DefaultValue(false)]
     public bool ForceNew { get; init; }
+
+    /// <summary>
+    /// HTTPクライアントのタイムアウト時間を取得または設定します。
+    /// </summary>
+    /// <value>
+    /// 値を表す <see cref="int" /> 型。
+    /// <para>HTTPクライアントのタイムアウト時間（秒）。</para>
+    /// </value>
+    [CommandOption("--timeout <SECONDS>")]
+    [Description("Specifies the timeout duration for the HTTP client in seconds")]
+    [DefaultValue(90)]
+    public int TimeoutSeconds { get; init; }
 }

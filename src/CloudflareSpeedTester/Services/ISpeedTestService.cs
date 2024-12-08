@@ -13,7 +13,7 @@ namespace CloudflareSpeedTester.Services;
 /// <summary>
 /// スピードテストサービスを提供するインターフェースです。
 /// </summary>
-internal interface ISpeedTestService : IDisposable
+internal interface ISpeedTestService
 {
     /// <summary>
     /// 非同期操作として、スピードテストを実行します。

@@ -65,7 +65,15 @@ internal sealed class SpeedTestCommand(ISpeedTestService service) : AsyncCommand
                             ctx.AddTask(spec.Description, autoStart: false, maxValue: spec.Iterations));
                     }
 
-                    testResult = await this._service.RunAsync(settings, testSpecs, startedAt).ConfigureAwait(false);
+                    try
+                    {
+                        testResult = await this._service.RunAsync(settings, testSpecs, startedAt).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        AnsiConsole.WriteException(ex);
+                        throw; // 再スローします。
+                    }
                 })
             .ConfigureAwait(false);
 

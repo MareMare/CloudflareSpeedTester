@@ -145,7 +145,11 @@ internal static class CalculationExtensions
 
         // mag is 0 for bps, 1 for kbps, 2, for Mbps, etc.
         var mag = (int)Math.Floor(Math.Log(targetValue, 1000));
-        if (mag >= units.Length)
+        if (mag < 0)
+        {
+            mag = 0;
+        }
+        else if (mag >= units.Length)
         {
             mag = units.Length - 1;
         }

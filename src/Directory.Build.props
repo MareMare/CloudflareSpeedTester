@@ -65,7 +65,7 @@
 
   <ItemGroup Label="Threading Analyzers">
     <!--Microsoft.VisualStudio.Threading.Analyzers package -->
-    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.11.20">
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15">
       <PrivateAssets>all</PrivateAssets>
       <!-- <PrivateAssets>none</PrivateAssets> -->
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

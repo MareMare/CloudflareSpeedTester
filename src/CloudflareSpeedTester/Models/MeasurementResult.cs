@@ -21,7 +21,7 @@ namespace CloudflareSpeedTester.Models;
 /// <param name="DownloadedJitter">ダウンロード時のジッターを表す値。</param>
 /// <param name="UploadedLatency">アップロード時のレイテンシを表す値。</param>
 /// <param name="UploadedJitter">アップロード時のジッターを表す値。</param>
-public sealed record MeasurementResult(
+internal sealed record MeasurementResult(
     [property: JsonPropertyName("startedAt")]
     DateTimeOffset StartedAt,
     [property: JsonPropertyName("download")]

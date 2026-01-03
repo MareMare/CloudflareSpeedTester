@@ -15,7 +15,7 @@ namespace CloudflareSpeedTester.Models;
 /// <param name="Colo">コロケーションを表します。</param>
 /// <param name="Country">国名を表します。</param>
 /// <param name="Ip">IPアドレスを表します。</param>
-public sealed record NetworkMetadata(
+internal sealed record NetworkMetadata(
     string Asn,
     string City,
     string Colo,

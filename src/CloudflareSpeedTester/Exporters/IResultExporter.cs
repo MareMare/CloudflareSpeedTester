@@ -12,7 +12,7 @@ namespace CloudflareSpeedTester.Exporters;
 /// <summary>
 /// 結果をエクスポートするためのインターフェースです。
 /// </summary>
-public interface IResultExporter
+internal interface IResultExporter
 {
     /// <summary>
     /// 測定結果を指定されたファイルにエクスポートします。

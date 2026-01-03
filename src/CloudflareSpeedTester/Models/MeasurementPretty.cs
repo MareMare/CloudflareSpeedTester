@@ -14,7 +14,7 @@ namespace CloudflareSpeedTester.Models;
 /// <see cref="MeasurementResult"/>を人間が読みやすい形式に変換するクラスです。
 /// </summary>
 /// <param name="result">変換対象の<see cref="MeasurementResult"/>。</param>
-public sealed class MeasurementPretty(MeasurementResult result)
+internal sealed class MeasurementPretty(MeasurementResult result)
 {
     /// <summary>
     /// ダウンロード速度を人間が読みやすい形式で取得します。

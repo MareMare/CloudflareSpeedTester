@@ -6,7 +6,7 @@ Simple Speed Test CLI via **[speed.cloudflare.com](https://speed.cloudflare.com/
 
 ## Requirements
 
-- [.NET Desktop Runtime 8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) is required.
+- [.NET Desktop Runtime 10.0](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) is required.
 - Download the latest version from the [releases page](https://github.com/MareMare/CloudflareSpeedTester/releases) and extract the ZIP file.
 
 ## Usage

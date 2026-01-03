@@ -34,7 +34,7 @@ internal sealed class SpeedTestCommand(ISpeedTestService service) : AsyncCommand
     private readonly ISpeedTestService _service = service;
 
     /// <inheritdoc />
-    public override async Task<int> ExecuteAsync(CommandContext context, SpeedTestSettings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, SpeedTestSettings settings, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(settings);
 

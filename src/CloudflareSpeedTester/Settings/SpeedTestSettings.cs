@@ -14,7 +14,9 @@ namespace CloudflareSpeedTester.Settings;
 /// スピードテストの設定を表すクラスです。
 /// </summary>
 // ReSharper disable once ClassNeverInstantiated.Global
-public sealed class SpeedTestSettings : CommandSettings
+#pragma warning disable CA1812
+internal sealed class SpeedTestSettings : CommandSettings
+#pragma warning restore CA1812
 {
     /// <summary>
     /// メタデータを表示するかどうかを取得します。

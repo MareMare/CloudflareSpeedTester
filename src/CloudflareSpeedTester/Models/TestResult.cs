@@ -13,7 +13,7 @@ namespace CloudflareSpeedTester.Models;
 /// <param name="Meta">ネットワークメタデータを表す<see cref="NetworkMetadata"/>。</param>
 /// <param name="Result">測定結果を表す<see cref="MeasurementResult"/>。</param>
 /// <param name="Pretty">人間が読みやすい形式の測定結果を表す<see cref="MeasurementPretty"/>。</param>
-public sealed record TestResult(
+internal sealed record TestResult(
     NetworkMetadata Meta,
     MeasurementResult Result,
     MeasurementPretty Pretty);

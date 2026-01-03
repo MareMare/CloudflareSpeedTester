@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DOTNET_VERSION: 8.0.x
+  DOTNET_VERSION: 10.0.x
 
 jobs:
   ci:
@@ -36,4 +36,4 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: 🛠️ Build
-        run: dotnet build "CloudflareSpeedTester.sln" --configuration Release
+        run: dotnet build "CloudflareSpeedTester.slnx" --configuration Release
